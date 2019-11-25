@@ -1,0 +1,16 @@
+{
+  "name": "get-bank-152493-function",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "json-query": "^2.2.2",
+    "object-mapper": "^6.0.1"
+  }
+}
