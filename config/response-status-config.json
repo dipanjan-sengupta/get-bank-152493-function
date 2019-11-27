@@ -1,0 +1,6 @@
+{
+    "Error": 400,
+    "TypeError": 500,
+    "ReferenceError": 500,
+    "ResourceNotFoundError": 404
+}

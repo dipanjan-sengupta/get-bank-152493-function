@@ -1,5 +1,6 @@
 const map = require('./mapper');
 const invoke = require('./invoker');
+const processor = require('./response-processor');
 
 const CLIENT_CONTEXT = process.env.SOAP_CALL_CLIENT_CONTEXT;
 const FUNCTION_NAME = process.env.SOAP_CALL_FUNCTION_NAME;
@@ -17,27 +18,20 @@ exports.handler = async(event, context, callback) => {
         method: system.operation,
         payload: payload
     };
-    console.log('SOAP Function Request - ', request);
-    await invoke(CLIENT_CONTEXT, FUNCTION_NAME, INVOCATION_TYPE, LOGGING_TYPE, JSON.stringify(request), QUALIFIER).then((result) => {
-            console.log('SOAP Function Response - ', result);
-            if (result.StatusCode == 200) {
-                var payload = JSON.parse(result.Payload);
-                if (!result.FunctionError) {
-                    if (system.responseMapper) {
-                        payload = map(payload, system.responseMapper.map, system.responseMapper.variables);
-                        callback(null, payload);
-                    }
-                    else {
-                        callback(null, payload);
-                    }
-                }
-                else {
-                    callback(JSON.stringify(payload), null);
-                }
-            }
-            else {
-                callback(JSON.stringify(result), null);
-            }
-        })
-        .catch((error) => callback(error, null));
+    console.log('SOAP Function Request', request);
+    try {
+        let response = {};
+        let payload = processor.processResponse(await invoke(CLIENT_CONTEXT, FUNCTION_NAME, INVOCATION_TYPE, LOGGING_TYPE, JSON.stringify(request), QUALIFIER));
+        if (system.responseMapper) {
+            payload = map(payload, system.responseMapper.map, system.responseMapper.variables);
+            response = { StatusCode: 200, body: payload };
+        }
+        else {
+            response = { StatusCode: 200, body: payload };
+        }
+        callback(null, response);
+    }
+    catch (e) {
+        callback(null, processor.processError(e));
+    }
 };
